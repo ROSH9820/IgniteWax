@@ -1,23 +1,24 @@
 import type { Metadata, Viewport } from "next";
-import { Suspense } from "react";
-import { Nunito, Quicksand } from "next/font/google";
+import { Inter, Playfair_Display } from "next/font/google";
+import { Toaster } from "sonner";
 import "./globals.css";
-import { Toaster } from "@/components/ui/toaster";
-import { Navbar } from "@/components/site/navbar";
-import { Footer } from "@/components/site/footer";
-import { WhatsAppFloat } from "@/components/site/whatsapp-float";
+import { MotionProvider } from "@/components/ui/motion-provider";
 import { siteConfig } from "@/lib/config";
 
-/* Rounded, friendly faces matching the reference mockup typography. */
-const bodyFont = Nunito({
+/*
+ * Typography per the reference design system:
+ *   Headings — Playfair Display (serif, elegant)
+ *   Body     — Inter (sans-serif, clean)
+ */
+const bodyFont = Inter({
   variable: "--font-body",
   subsets: ["latin"],
   display: "swap",
 });
-const headingFont = Quicksand({
+
+const headingFont = Playfair_Display({
   variable: "--font-heading",
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
   display: "swap",
 });
 
@@ -56,7 +57,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#f5f2e8",
+  themeColor: "#f5f0eb",
   width: "device-width",
   initialScale: 1,
 };
@@ -69,15 +70,8 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${bodyFont.variable} ${headingFont.variable} font-sans antialiased`}>
-        <div className="page-glow flex min-h-screen flex-col">
-          <Suspense fallback={null}>
-            <Navbar />
-          </Suspense>
-          <main className="flex-1">{children}</main>
-          <Footer />
-        </div>
-        <WhatsAppFloat />
-        <Toaster />
+        <MotionProvider>{children}</MotionProvider>
+        <Toaster position="top-center" richColors closeButton />
       </body>
     </html>
   );

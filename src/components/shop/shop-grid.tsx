@@ -1,63 +1,67 @@
 "use client";
 
-import { useState } from "react";
-import { useSearchParams } from "next/navigation";
-import { motion } from "framer-motion";
-import { ProductCard } from "@/components/site/product-card";
-import { categories, products } from "@/data/products";
+import { useMemo, useState } from "react";
+import { StaggerGroup } from "@/components/ui/reveal";
+import { ProductCard } from "@/components/shop/product-card";
+import { fetchProducts } from "@/lib/api";
+import type { ProductCategory } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-export function ShopGrid() {
-  const params = useSearchParams();
-  const initial = params.get("category");
-  const [active, setActive] = useState<string>(
-    categories.includes(initial as never) ? (initial as string) : "All",
-  );
+const filters: Array<"All" | ProductCategory> = ["All", "Floral", "Woody", "Warm", "Fresh"];
 
-  const select = (c: string) => {
-    setActive(c);
-    const url = c === "All" ? "/shop" : `/shop?category=${encodeURIComponent(c)}`;
-    window.history.replaceState(null, "", url);
-  };
-
-  const visible = products.filter(
-    (p) => p.available && (active === "All" || p.category === active),
+/**
+ * Shop grid — filter pills across the top, full product grid below.
+ * Client-side filtering keeps it instant; the catalog is tiny.
+ */
+export function ShopGrid({ initialFilter = "All" }: { initialFilter?: string }) {
+  const [active, setActive] = useState<(typeof filters)[number]>(
+    (filters as readonly string[]).includes(initialFilter)
+      ? (initialFilter as (typeof filters)[number])
+      : "All",
   );
+  const products = useMemo(() => fetchProducts(), []);
+
+  const visible =
+    active === "All" ? products : products.filter((p) => p.category === active);
 
   return (
     <div>
-      {/* Category pills */}
       <div
         role="tablist"
-        aria-label="Filter products by category"
+        aria-label="Filter candles by scent family"
         className="flex flex-wrap justify-center gap-2"
       >
-        {categories.map((c) => (
+        {filters.map((f) => (
           <button
-            key={c}
+            key={f}
+            type="button"
             role="tab"
-            aria-selected={active === c}
-            onClick={() => select(c)}
+            aria-selected={active === f}
+            onClick={() => setActive(f)}
             className={cn(
-              "min-h-10 rounded-full border border-forest/12 bg-white px-5 text-[13.5px] font-semibold text-forest/70 transition-all duration-200 hover:border-olive/40 hover:text-forest",
-              active === c && "border-olive bg-olive text-white hover:text-white",
+              "rounded-full px-5 py-2.5 text-sm font-medium transition-colors duration-300",
+              active === f
+                ? "bg-sage font-semibold text-softwhite"
+                : "bg-softwhite text-body soft-shadow hover:bg-sage-soft hover:text-ink",
             )}
           >
-            {c}
+            {f}
           </button>
         ))}
       </div>
 
-      {/* Grid */}
-      <motion.div layout className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {visible.map((p, i) => (
-          <ProductCard key={p.id} product={p} index={i} variant="grid" />
+      <StaggerGroup
+        key={active}
+        className="mt-10 grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4"
+      >
+        {visible.map((p) => (
+          <ProductCard key={p.id} product={p} />
         ))}
-      </motion.div>
+      </StaggerGroup>
 
       {visible.length === 0 && (
-        <p className="mt-16 text-center text-[15px] text-inkbody">
-          Nothing in this category yet — new candles are pouring soon.
+        <p className="mt-16 text-center text-sm text-body">
+          No candles in this collection yet — check back soon.
         </p>
       )}
     </div>

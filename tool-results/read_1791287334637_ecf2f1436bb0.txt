@@ -1,0 +1,653 @@
+     1→"use client";
+     2→
+     3→import { useEffect, useMemo, useState } from "react";
+     4→import Link from "next/link";
+     5→import { useSearchParams } from "next/navigation";
+     6→import { motion } from "framer-motion";
+     7→import {
+     8→  ArrowLeft,
+     9→  ArrowRight,
+    10→  CheckCircle2,
+    11→  Copy,
+    12→  Loader2,
+    13→  MessageCircle,
+    14→  Package,
+    15→  QrCode,
+    16→  ShieldCheck,
+    17→  Truck,
+    18→} from "lucide-react";
+    19→import { useToast } from "@/hooks/use-toast";
+    20→import { products } from "@/data/products";
+    21→import { formatPrice, whatsappLink, whatsappMessages } from "@/lib/config";
+    22→import { cn } from "@/lib/utils";
+    23→
+    24→/* ── Types ──────────────────────────────────────────────────────────────── */
+    25→
+    26→interface ConfirmedOrder {
+    27→  orderId: string;
+    28→  deliveryLabel: string;
+    29→  total: number;
+    30→  items: Array<{ name: string; quantity: number; lineTotal: number }>;
+    31→}
+    32→
+    33→type Step = "form" | "payment" | "confirmed";
+    34→
+    35→const inputBase =
+    36→  "w-full rounded-2xl border border-input bg-white px-4 py-3 text-[14.5px] text-forest placeholder:text-inkbody/45 transition-colors focus:border-olive focus:outline-none focus:ring-2 focus:ring-olive/25";
+    37→
+    38→const labelBase = "mb-1.5 block text-[13px] font-bold text-forest";
+    39→
+    40→/* ── Component ──────────────────────────────────────────────────────────── */
+    41→
+    42→export function OrderWizard() {
+    43→  const params = useSearchParams();
+    44→  const { toast } = useToast();
+    45→
+    46→  const preselected = params.get("product");
+    47→  const preQty = Math.min(20, Math.max(1, Number(params.get("qty")) || 1));
+    48→
+    49→  const [step, setStep] = useState<Step>("form");
+    50→  const [submitting, setSubmitting] = useState(false);
+    51→  const [utr, setUtr] = useState("");
+    52→  const [utrSubmitting, setUtrSubmitting] = useState(false);
+    53→  const [confirmed, setConfirmed] = useState<ConfirmedOrder | null>(null);
+    54→  const [copied, setCopied] = useState(false);
+    55→  const [serverError, setServerError] = useState<string | null>(null);
+    56→  const [fieldErrs, setFieldErrs] = useState<Record<string, string>>({});
+    57→
+    58→  const [productId, setProductId] = useState(
+    59→    () => products.find((p) => p.slug === preselected && p.available)?.id ?? products[0].id,
+    60→  );
+    61→  const [qty, setQty] = useState(preQty);
+    62→  const [form, setForm] = useState({
+    63→    fullName: "",
+    64→    mobile: "",
+    65→    email: "",
+    66→    address: "",
+    67→    city: "",
+    68→    state: "",
+    69→    pincode: "",
+    70→    note: "",
+    71→    company: "", // honeypot — must stay empty
+    72→  });
+    73→
+    74→  const product = useMemo(
+    75→    () => products.find((p) => p.id === productId) ?? products[0],
+    76→    [productId],
+    77→  );
+    78→  const total = product.price * qty;
+    79→  const upiId = process.env.NEXT_PUBLIC_UPI_ID_DISPLAY ?? "ignitewax@upi";
+    80→
+    81→  useEffect(() => {
+    82→    window.scrollTo({ top: 0, behavior: "smooth" });
+    83→  }, [step]);
+    84→
+    85→  const set = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    86→    setForm((f) => ({ ...f, [key]: e.target.value }));
+    87→
+    88→  /* ── Step 1: submit order ─────────────────────────────────────────────── */
+    89→
+    90→  async function submitOrder(e: React.FormEvent) {
+    91→    e.preventDefault();
+    92→    setServerError(null);
+    93→    setFieldErrs({});
+    94→    setSubmitting(true);
+    95→    try {
+    96→      const res = await fetch("/api/order", {
+    97→        method: "POST",
+    98→        headers: { "Content-Type": "application/json" },
+    99→        body: JSON.stringify({
+   100→          customer: {
+   101→            fullName: form.fullName,
+   102→            mobile: form.mobile,
+   103→            email: form.email,
+   104→            address: form.address,
+   105→            city: form.city,
+   106→            state: form.state,
+   107→            pincode: form.pincode,
+   108→          },
+   109→          items: [{ productId, quantity: qty }],
+   110→          note: form.note,
+   111→          company: form.company,
+   112→        }),
+   113→      });
+   114→      const data = await res.json();
+   115→
+   116→      if (res.status === 429) {
+   117→        setServerError(
+   118→          "You're ordering a little too quickly. Please wait a moment and try again.",
+   119→        );
+   120→        return;
+   121→      }
+   122→      if (res.status === 400 && data?.errors) {
+   123→        setFieldErrs(data.errors);
+   124→        setServerError("Please review the highlighted fields below.");
+   125→        return;
+   126→      }
+   127→      if (!res.ok) {
+   128→        setServerError(
+   129→          "We couldn't submit your order right now. Please try again in a moment or contact us on WhatsApp.",
+   130→        );
+   131→        return;
+   132→      }
+   133→
+   134→      setConfirmed({
+   135→        orderId: data.orderId,
+   136→        deliveryLabel: data.deliveryLabel,
+   137→        total: data.total,
+   138→        items: data.items,
+   139→      });
+   140→      setStep("payment");
+   141→      toast({
+   142→        title: "Order received",
+   143→        description: `Your order ID is ${data.orderId}. A confirmation email is on its way.`,
+   144→      });
+   145→    } catch {
+   146→      setServerError(
+   147→        "We couldn't reach the server. Please check your connection and try again, or contact us on WhatsApp.",
+   148→      );
+   149→    } finally {
+   150→      setSubmitting(false);
+   151→    }
+   152→  }
+   153→
+   154→  /* ── Step 2: payment ─────────────────────────────────────────────────── */
+   155→
+   156→  async function copyUpi() {
+   157→    try {
+   158→      await navigator.clipboard.writeText(upiId);
+   159→      setCopied(true);
+   160→      setTimeout(() => setCopied(false), 2000);
+   161→    } catch {
+   162→      toast({ title: "Couldn't copy", description: `UPI ID: ${upiId}` });
+   163→    }
+   164→  }
+   165→
+   166→  async function submitUtr(): Promise<boolean> {
+   167→    const trimmed = utr.trim();
+   168→    if (!trimmed) return true; // optional
+   169→    if (trimmed.length < 6) {
+   170→      setFieldErrs({ utr: "Reference looks too short." });
+   171→      return false;
+   172→    }
+   173→    setUtrSubmitting(true);
+   174→    try {
+   175→      const res = await fetch("/api/order/payment-note", {
+   176→        method: "POST",
+   177→        headers: { "Content-Type": "application/json" },
+   178→        body: JSON.stringify({ orderId: confirmed?.orderId, utr: trimmed }),
+   179→      });
+   180→      if (res.ok) {
+   181→        toast({
+   182→          title: "Payment reference received",
+   183→          description: "We'll match it with your payment shortly.",
+   184→        });
+   185→        return true;
+   186→      }
+   187→      // Non-blocking: UTR is optional metadata; confirmation continues either way.
+   188→      toast({
+   189→        title: "Reference couldn't be submitted",
+   190→        description: "No problem — share it with us on WhatsApp instead.",
+   191→      });
+   192→      return true;
+   193→    } catch {
+   194→      return true; // optional field, never block confirmation
+   195→    } finally {
+   196→      setUtrSubmitting(false);
+   197→    }
+   198→  }
+   199→
+   200→  async function confirmPayment() {
+   201→    const ok = await submitUtr();
+   202→    if (ok) setStep("confirmed");
+   203→  }
+   204→
+   205→  /* ── Render ───────────────────────────────────────────────────────────── */
+   206→
+   207→  if (step === "confirmed" && confirmed) {
+   208→    return <Confirmation order={confirmed} />;
+   209→  }
+   210→
+   211→  if (step === "payment" && confirmed) {
+   212→    return (
+   213→      <motion.div
+   214→        initial={{ opacity: 0, y: 16 }}
+   215→        animate={{ opacity: 1, y: 0 }}
+   216→        transition={{ duration: 0.4, ease: "easeOut" }}
+   217→        className="mx-auto max-w-2xl"
+   218→      >
+   219→        <OrderSummaryCard confirmed={confirmed} />
+   220→
+   221→        <div className="mt-5 rounded-[26px] bg-white p-7 soft-shadow sm:p-9">
+   222→          <div className="flex items-center gap-3">
+   223→            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-sage text-olive">
+   224→              <QrCode className="h-5.5 w-5.5" strokeWidth={1.8} />
+   225→            </span>
+   226→            <div>
+   227→              <h2 className="text-[22px] font-bold text-forest">Complete Your Payment</h2>
+   228→              <p className="text-[13px] text-inkbody">
+   229→                Amount due: <b className="text-clay-deep">{formatPrice(confirmed.total)}</b>
+   230→              </p>
+   231→            </div>
+   232→          </div>
+   233→
+   234→          <div className="mt-7 grid items-center gap-7 sm:grid-cols-[auto_1fr]">
+   235→            {/* QR */}
+   236→            <div className="mx-auto rounded-3xl border border-border bg-white p-4 soft-shadow">
+   237→              { }
+   238→              <img
+   239→                src="/images/site/upi-qr-placeholder.png"
+   240→                alt="UPI QR code for Ignite Wax payment (placeholder — scan with any UPI app)"
+   241→                className="h-40 w-40"
+   242→              />
+   243→              <p className="mt-2 text-center text-[11px] text-inkbody/60">
+   244→                Scan with any UPI app
+   245→              </p>
+   246→            </div>
+   247→
+   248→            {/* UPI details */}
+   249→            <div>
+   250→              <p className={labelBase}>UPI ID</p>
+   251→              <div className="flex items-center gap-2">
+   252→                <code className="flex-1 rounded-2xl border border-input bg-sand/60 px-4 py-3 text-[15px] font-bold tracking-wide text-forest">
+   253→                  {upiId}
+   254→                </code>
+   255→                <button
+   256→                  type="button"
+   257→                  onClick={copyUpi}
+   258→                  className={cn(
+   259→                    "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-input bg-white text-forest transition-colors hover:bg-sage",
+   260→                    copied && "border-olive bg-sage text-olive",
+   261→                  )}
+   262→                  aria-label={copied ? "UPI ID copied" : "Copy UPI ID"}
+   263→                >
+   264→                  {copied ? <CheckCircle2 className="h-5 w-5" /> : <Copy className="h-5 w-5" />}
+   265→                </button>
+   266→              </div>
+   267→              <p className="mt-2 text-[12px] text-inkbody/70">
+   268→                Pay to <b>{upiId}</b> (Google Pay, PhonePe, Paytm or any UPI app),
+   269→                then confirm below.
+   270→              </p>
+   271→
+   272→              {/* UTR */}
+   273→              <p className={cn(labelBase, "mt-6")}>
+   274→                Payment Reference / UTR{" "}
+   275→                <span className="font-normal text-inkbody/60">(optional)</span>
+   276→              </p>
+   277→              <input
+   278→                value={utr}
+   279→                onChange={(e) => setUtr(e.target.value)}
+   280→                placeholder="e.g. 402512345678"
+   281→                inputMode="numeric"
+   282→                className={inputBase}
+   283→                aria-label="UPI Transaction ID / UTR (optional)"
+   284→                aria-invalid={Boolean(fieldErrs.utr)}
+   285→              />
+   286→              {fieldErrs.utr && (
+   287→                <p className="mt-1.5 text-[12.5px] font-semibold text-destructive">
+   288→                  {fieldErrs.utr}
+   289→                </p>
+   290→              )}
+   291→              <p className="mt-2 text-[12px] leading-relaxed text-inkbody/70">
+   292→                Helps us match your payment faster — find it in your UPI app&apos;s
+   293→                transaction details. Completely optional.
+   294→              </p>
+   295→            </div>
+   296→          </div>
+   297→
+   298→          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+   299→            <button
+   300→              type="button"
+   301→              onClick={confirmPayment}
+   302→              disabled={utrSubmitting}
+   303→              className="group inline-flex min-h-13 flex-1 items-center justify-center gap-2.5 rounded-full bg-olive px-8 text-[15px] font-semibold text-white transition-all duration-200 hover:bg-olive-deep hover:shadow-lg hover:shadow-olive/25 disabled:opacity-60"
+   304→            >
+   305→              {utrSubmitting ? (
+   306→                <Loader2 className="h-5 w-5 animate-spin" />
+   307→              ) : (
+   308→                <>
+   309→                  I&apos;ve Made the Payment
+   310→                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20 transition-transform duration-200 group-hover:translate-x-0.5">
+   311→                    <ArrowRight className="h-4 w-4" />
+   312→                  </span>
+   313→                </>
+   314→              )}
+   315→            </button>
+   316→            <button
+   317→              type="button"
+   318→              onClick={() => setStep("confirmed")}
+   319→              className="inline-flex min-h-13 items-center justify-center rounded-full border border-forest/15 bg-white px-7 text-[14.5px] font-semibold text-forest transition-colors hover:bg-sand"
+   320→            >
+   321→              I&apos;ll pay shortly
+   322→            </button>
+   323→          </div>
+   324→
+   325→          <p className="mt-5 flex items-start gap-2 text-[12px] leading-relaxed text-inkbody/75">
+   326→            <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-olive" aria-hidden="true" />
+   327→            Payments are verified manually by our team (usually within a few
+   328→            hours) before your candles are dispatched. You&apos;ll receive a
+   329→            confirmation once verified.
+   330→          </p>
+   331→        </div>
+   332→      </motion.div>
+   333→    );
+   334→  }
+   335→
+   336→  /* ── Step 1: order form ───────────────────────────────────────────────── */
+   337→
+   338→  return (
+   339→    <motion.div
+   340→      initial={{ opacity: 0, y: 16 }}
+   341→      animate={{ opacity: 1, y: 0 }}
+   342→      transition={{ duration: 0.4, ease: "easeOut" }}
+   343→      className="mx-auto grid max-w-5xl gap-8 lg:grid-cols-[1.5fr_1fr]"
+   344→    >
+   345→      {/* Form */}
+   346→      <form onSubmit={submitOrder} noValidate className="rounded-[26px] bg-white p-7 soft-shadow sm:p-9">
+   347→        <h2 className="text-[22px] font-bold text-forest">Your details</h2>
+   348→        <p className="mt-1 text-[13.5px] text-inkbody">
+   349→          Tell us where to send your candles. We&apos;ll take care of the rest.
+   350→        </p>
+   351→
+   352→        <div className="mt-7 grid gap-5 sm:grid-cols-2">
+   353→          <div className="sm:col-span-2">
+   354→            <label htmlFor="fullName" className={labelBase}>Full name</label>
+   355→            <input id="fullName" required autoComplete="name" value={form.fullName} onChange={set("fullName")}
+   356→              className={inputBase} placeholder="Aarav Sharma" aria-invalid={Boolean(fieldErrs["customer.fullName"])} />
+   357→            <FieldError msg={fieldErrs["customer.fullName"]} />
+   358→          </div>
+   359→
+   360→          <div>
+   361→            <label htmlFor="mobile" className={labelBase}>Mobile number</label>
+   362→            <input id="mobile" required type="tel" inputMode="numeric" autoComplete="tel" value={form.mobile} onChange={set("mobile")}
+   363→              className={inputBase} placeholder="98765 43210" aria-invalid={Boolean(fieldErrs["customer.mobile"])} />
+   364→            <FieldError msg={fieldErrs["customer.mobile"]} />
+   365→          </div>
+   366→
+   367→          <div>
+   368→            <label htmlFor="email" className={labelBase}>Email address</label>
+   369→            <input id="email" required type="email" autoComplete="email" value={form.email} onChange={set("email")}
+   370→              className={inputBase} placeholder="you@example.com" aria-invalid={Boolean(fieldErrs["customer.email"])} />
+   371→            <FieldError msg={fieldErrs["customer.email"]} />
+   372→          </div>
+   373→
+   374→          <div className="sm:col-span-2">
+   375→            <label htmlFor="address" className={labelBase}>Full delivery address</label>
+   376→            <textarea id="address" required rows={3} autoComplete="street-address" value={form.address} onChange={set("address")}
+   377→              className={cn(inputBase, "resize-none")} placeholder="Flat / house no., street, landmark…" aria-invalid={Boolean(fieldErrs["customer.address"])} />
+   378→            <FieldError msg={fieldErrs["customer.address"]} />
+   379→          </div>
+   380→
+   381→          <div>
+   382→            <label htmlFor="city" className={labelBase}>City</label>
+   383→            <input id="city" required autoComplete="address-level2" value={form.city} onChange={set("city")}
+   384→              className={inputBase} placeholder="Mumbai" aria-invalid={Boolean(fieldErrs["customer.city"])} />
+   385→            <FieldError msg={fieldErrs["customer.city"]} />
+   386→          </div>
+   387→
+   388→          <div>
+   389→            <label htmlFor="state" className={labelBase}>State</label>
+   390→            <input id="state" required autoComplete="address-level1" value={form.state} onChange={set("state")}
+   391→              className={inputBase} placeholder="Maharashtra" aria-invalid={Boolean(fieldErrs["customer.state"])} />
+   392→            <FieldError msg={fieldErrs["customer.state"]} />
+   393→          </div>
+   394→
+   395→          <div>
+   396→            <label htmlFor="pincode" className={labelBase}>PIN code</label>
+   397→            <input id="pincode" required inputMode="numeric" autoComplete="postal-code" value={form.pincode} onChange={set("pincode")}
+   398→              className={inputBase} placeholder="400001" maxLength={6} aria-invalid={Boolean(fieldErrs["customer.pincode"])} />
+   399→            <FieldError msg={fieldErrs["customer.pincode"]} />
+   400→          </div>
+   401→
+   402→          <div className="sm:col-span-2">
+   403→            <label htmlFor="note" className={labelBase}>
+   404→              Note <span className="font-normal text-inkbody/60">(optional)</span>
+   405→            </label>
+   406→            <textarea id="note" rows={2} value={form.note} onChange={set("note")}
+   407→              className={cn(inputBase, "resize-none")}
+   408→              placeholder="Gift wrap requests, delivery instructions…" />
+   409→          </div>
+   410→
+   411→          {/* Honeypot — hidden from humans, irresistible to bots */}
+   412→          <div className="hidden" aria-hidden="true">
+   413→            <label htmlFor="company">Company</label>
+   414→            <input id="company" tabIndex={-1} autoComplete="off" value={form.company} onChange={set("company")} />
+   415→          </div>
+   416→        </div>
+   417→
+   418→        {serverError && (
+   419→          <p role="alert" className="mt-5 rounded-2xl bg-destructive/8 px-4 py-3 text-[13.5px] font-semibold text-destructive">
+   420→            {serverError}
+   421→          </p>
+   422→        )}
+   423→
+   424→        <button
+   425→          type="submit"
+   426→          disabled={submitting}
+   427→          className="group mt-7 inline-flex min-h-13 w-full items-center justify-center gap-2.5 rounded-full bg-olive px-8 text-[15px] font-semibold text-white transition-all duration-200 hover:bg-olive-deep hover:shadow-lg hover:shadow-olive/25 disabled:opacity-60"
+   428→        >
+   429→          {submitting ? (
+   430→            <>
+   431→              <Loader2 className="h-5 w-5 animate-spin" />
+   432→              Placing your order…
+   433→            </>
+   434→          ) : (
+   435→            <>
+   436→              Place Order — {formatPrice(total)}
+   437→              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20 transition-transform duration-200 group-hover:translate-x-0.5">
+   438→                <ArrowRight className="h-4 w-4" />
+   439→              </span>
+   440→            </>
+   441→          )}
+   442→        </button>
+   443→
+   444→        <p className="mt-4 flex items-center justify-center gap-2 text-center text-[12px] text-inkbody/70">
+   445→          <ShieldCheck className="h-4 w-4 text-olive" aria-hidden="true" />
+   446→          Free to order · Pay after ordering via UPI · Delivery in 7–14 days
+   447→        </p>
+   448→      </form>
+   449→
+   450→      {/* Order summary */}
+   451→      <aside className="lg:sticky lg:top-28 lg:self-start">
+   452→        <div className="rounded-[26px] bg-white p-7 soft-shadow">
+   453→          <h2 className="flex items-center gap-2.5 text-[17px] font-bold text-forest">
+   454→            <Package className="h-5 w-5 text-olive" />
+   455→            Your order
+   456→          </h2>
+   457→
+   458→          <label htmlFor="product-select" className={cn(labelBase, "mt-5")}>Candle</label>
+   459→          <select
+   460→            id="product-select"
+   461→            value={productId}
+   462→            onChange={(e) => setProductId(e.target.value)}
+   463→            className={cn(inputBase, "appearance-none")}
+   464→          >
+   465→            {products.filter((p) => p.available).map((p) => (
+   466→              <option key={p.id} value={p.id}>
+   467→                {p.name} — {p.fragrance} ({formatPrice(p.price)})
+   468→              </option>
+   469→            ))}
+   470→          </select>
+   471→
+   472→          <div className="mt-4 flex items-center justify-between">
+   473→            <span className={cn(labelBase, "mb-0")}>Quantity</span>
+   474→            <div className="flex items-center gap-1 rounded-full border border-input bg-white p-1">
+   475→              <button type="button" aria-label="Decrease quantity"
+   476→                onClick={() => setQty((q) => Math.max(1, q - 1))}
+   477→                className="flex h-8 w-8 items-center justify-center rounded-full text-forest hover:bg-sage disabled:opacity-35"
+   478→                disabled={qty <= 1}>−</button>
+   479→              <span className="w-8 text-center text-[14px] font-bold text-forest">{qty}</span>
+   480→              <button type="button" aria-label="Increase quantity"
+   481→                onClick={() => setQty((q) => Math.min(20, q + 1))}
+   482→                className="flex h-8 w-8 items-center justify-center rounded-full text-forest hover:bg-sage disabled:opacity-35"
+   483→                disabled={qty >= 20}>+</button>
+   484→            </div>
+   485→          </div>
+   486→
+   487→          <div className="mt-5 overflow-hidden rounded-2xl">
+   488→            { }
+   489→            <img src={product.image} alt={`${product.name} candle`} className="aspect-[16/9] w-full object-cover" />
+   490→          </div>
+   491→          <p className="mt-3 text-[13px] text-inkbody">{product.description}</p>
+   492→
+   493→          <div className="mt-5 space-y-2 border-t border-border pt-4 text-[14px]">
+   494→            <p className="flex justify-between text-inkbody">
+   495→              <span>{product.name} × {qty}</span>
+   496→              <span>{formatPrice(product.price * qty)}</span>
+   497→            </p>
+   498→            <p className="flex justify-between text-inkbody">
+   499→              <span>Delivery</span>
+   500→              <span className="font-semibold text-olive">Calculated at dispatch</span>
+   501→            </p>
+   502→            <p className="flex justify-between border-t border-border pt-3 text-[16px] font-bold text-forest">
+   503→              <span>Total</span>
+   504→              <span className="text-clay-deep">{formatPrice(total)}</span>
+   505→            </p>
+   506→          </div>
+   507→
+   508→          <p className="mt-5 flex items-start gap-2 rounded-2xl bg-sand/70 p-3.5 text-[12px] leading-relaxed text-inkbody">
+   509→            <Truck className="mt-0.5 h-4 w-4 shrink-0 text-olive" aria-hidden="true" />
+   510→            Estimated delivery window is calculated when you place the order —
+   511→            currently 7–14 days.
+   512→          </p>
+   513→        </div>
+   514→      </aside>
+   515→    </motion.div>
+   516→  );
+   517→}
+   518→
+   519→/* ── Sub-components ─────────────────────────────────────────────────────── */
+   520→
+   521→function FieldError({ msg }: { msg?: string }) {
+   522→  if (!msg) return null;
+   523→  return (
+   524→    <p role="alert" className="mt-1.5 text-[12.5px] font-semibold text-destructive">
+   525→      {msg}
+   526→    </p>
+   527→  );
+   528→}
+   529→
+   530→function OrderSummaryCard({ confirmed }: { confirmed: ConfirmedOrder }) {
+   531→  return (
+   532→    <div className="rounded-[26px] bg-forest p-6 text-cream soft-shadow sm:p-7">
+   533→      <p className="flex items-center gap-2.5 text-[13px] font-semibold text-cream/80">
+   534→        <CheckCircle2 className="h-5 w-5 text-clay" />
+   535→        Order placed — pending payment
+   536→      </p>
+   537→      <p className="mt-2 text-[26px] font-bold">
+   538→        {confirmed.orderId}
+   539→      </p>
+   540→      <div className="mt-3 flex flex-wrap gap-x-6 gap-y-1.5 text-[13.5px] text-cream/80">
+   541→        {confirmed.items.map((i) => (
+   542→          <span key={i.name}>
+   543→            {i.name} × {i.quantity} — {formatPrice(i.lineTotal)}
+   544→          </span>
+   545→        ))}
+   546→        <span className="font-bold text-clay">Total {formatPrice(confirmed.total)}</span>
+   547→      </div>
+   548→    </div>
+   549→  );
+   550→}
+   551→
+   552→function Confirmation({ order }: { order: ConfirmedOrder }) {
+   553→  return (
+   554→    <motion.div
+   555→      initial={{ opacity: 0, y: 16 }}
+   556→      animate={{ opacity: 1, y: 0 }}
+   557→      transition={{ duration: 0.45, ease: "easeOut" }}
+   558→      className="mx-auto max-w-2xl"
+   559→    >
+   560→      <div className="overflow-hidden rounded-[28px] bg-white soft-shadow-lg">
+   561→        <div className="bg-forest px-8 py-12 text-center">
+   562→          <motion.span
+   563→            initial={{ scale: 0.6, opacity: 0 }}
+   564→            animate={{ scale: 1, opacity: 1 }}
+   565→            transition={{ duration: 0.4, delay: 0.15, type: "spring", stiffness: 220 }}
+   566→            className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-clay text-white"
+   567→          >
+   568→            <CheckCircle2 className="h-8 w-8" />
+   569→          </motion.span>
+   570→          <h1 className="mt-5 text-3xl font-bold text-cream sm:text-[34px]">
+   571→            Order Received!
+   572→          </h1>
+   573→          <p className="mt-2 text-[14.5px] text-cream/75">
+   574→            Thank you for choosing Ignite Wax. Your candles are being prepared
+   575→            with care.
+   576→          </p>
+   577→        </div>
+   578→
+   579→        <div className="px-8 py-8">
+   580→          <div className="grid gap-4 sm:grid-cols-2">
+   581→            <div className="rounded-2xl bg-sand/70 p-5 text-center">
+   582→              <p className="text-[11px] font-bold tracking-[0.16em] text-inkbody/70 uppercase">
+   583→                Order ID
+   584→              </p>
+   585→              <p className="mt-1.5 text-[21px] font-bold text-forest">{order.orderId}</p>
+   586→            </div>
+   587→            <div className="rounded-2xl bg-sand/70 p-5 text-center">
+   588→              <p className="text-[11px] font-bold tracking-[0.16em] text-inkbody/70 uppercase">
+   589→                Estimated Delivery
+   590→              </p>
+   591→              <p className="mt-1.5 flex items-center justify-center gap-2 text-[17px] font-bold text-forest">
+   592→                <Truck className="h-5 w-5 text-olive" aria-hidden="true" />
+   593→                {order.deliveryLabel}
+   594→              </p>
+   595→            </div>
+   596→          </div>
+   597→
+   598→          <div className="mt-5 rounded-2xl border border-border p-5">
+   599→            <p className="text-[13px] font-bold text-forest">Items</p>
+   600→            <ul className="mt-2 space-y-1.5 text-[13.5px] text-inkbody">
+   601→              {order.items.map((i) => (
+   602→                <li key={i.name} className="flex justify-between">
+   603→                  <span>{i.name} × {i.quantity}</span>
+   604→                  <span>{formatPrice(i.lineTotal)}</span>
+   605→                </li>
+   606→              ))}
+   607→              <li className="flex justify-between border-t border-border pt-2 font-bold text-forest">
+   608→                <span>Total</span>
+   609→                <span className="text-clay-deep">{formatPrice(order.total)}</span>
+   610→              </li>
+   611→            </ul>
+   612→          </div>
+   613→
+   614→          <p className="mt-5 flex items-start gap-2.5 rounded-2xl bg-sage/60 p-4 text-[13.5px] leading-relaxed text-forest">
+   615→            <MailIcon />
+   616→            We&apos;ve sent your order details to your email. Payment is
+   617→            verified manually — we&apos;ll confirm once it&apos;s matched.
+   618→          </p>
+   619→
+   620→          <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+   621→            <a
+   622→              href={whatsappLink(whatsappMessages.orderHelp(order.orderId))}
+   623→              target="_blank"
+   624→              rel="noopener noreferrer"
+   625→              className="inline-flex min-h-12 flex-1 items-center justify-center gap-2.5 rounded-full bg-olive px-6 text-[14.5px] font-semibold text-white transition-colors hover:bg-olive-deep"
+   626→            >
+   627→              <MessageCircle className="h-4.5 w-4.5" />
+   628→              Need help? Chat on WhatsApp
+   629→            </a>
+   630→            <Link
+   631→              href="/shop"
+   632→              className="inline-flex min-h-12 flex-1 items-center justify-center gap-2.5 rounded-full border border-forest/15 px-6 text-[14.5px] font-semibold text-forest transition-colors hover:bg-sand"
+   633→            >
+   634→              <ArrowLeft className="h-4 w-4" />
+   635→              Continue browsing
+   636→            </Link>
+   637→          </div>
+   638→        </div>
+   639→      </div>
+   640→    </motion.div>
+   641→  );
+   642→}
+   643→
+   644→function MailIcon() {
+   645→  return (
+   646→    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"
+   647→      strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 h-4.5 w-4.5 shrink-0 text-olive" aria-hidden="true">
+   648→      <rect x="3" y="5" width="18" height="14" rx="3" />
+   649→      <path d="m3.5 7.5 8.5 6 8.5-6" />
+   650→    </svg>
+   651→  );
+   652→}
+   653→

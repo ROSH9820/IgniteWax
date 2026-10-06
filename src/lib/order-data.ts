@@ -5,7 +5,7 @@
  * product from the catalog (never trusting the browser) and computes totals.
  */
 
-import { products } from "@/data/products";
+import { products } from "@/lib/data";
 
 export interface ResolvedItem {
   id: string;
@@ -22,12 +22,12 @@ export interface ResolvedOrder {
   deliveryLabel: string;
   customer: {
     fullName: string;
-    mobile: string;
+    phone: string;
     email: string;
     address: string;
-    city: string;
-    state: string;
-    pincode: string;
+    city?: string;
+    state?: string;
+    pincode?: string;
   };
   items: ResolvedItem[];
   total: number;

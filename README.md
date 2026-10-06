@@ -22,11 +22,23 @@ bun run dev            # http://localhost:3000
 
 | Route | Purpose |
 |---|---|
-| `/` | Homepage — hero, bestsellers, story, why, testimonials, gallery, CTA |
-| `/shop` | All products with category filter |
-| `/product/[slug]` | Product details, quantity, order + WhatsApp CTAs |
-| `/order` | Order form → UPI payment panel → confirmation |
+| `/` | Homepage — hero, bestsellers, value banner |
+| `/shop` | All products with scent-family filter pills (All, Floral, Woody, Warm, Fresh) |
+| `/shop/[slug]` | Product details, quantity, order + WhatsApp CTAs, accordions |
+| `/order` | Clean order form → UPI payment panel → confirmation |
 | `/about` `/contact` `/privacy` `/terms` | Supporting pages |
+| `/collections` `/wellness` | Editorial collections and rituals pages |
+| `/admin` `/admin/orders` `/admin/products` | Admin dashboard (Phase 1 password gate — default `ignite2026`, override with `ADMIN_PASSWORD`) |
+
+## Architecture
+
+```text
+src/lib/types.ts   — strict TypeScript data contract (Product, Order, Customer…)
+src/lib/data.ts    — Phase 1 mock JSON data (products + demo admin orders)
+src/lib/api.ts     — the ONLY data access layer the UI may call
+                     (Phase 2: swap these function bodies to Supabase/PostgreSQL,
+                      not a single component changes)
+```
 
 ## Order flow (v1 — no payment gateway)
 
@@ -40,7 +52,8 @@ Customer → Order form → POST /api/order (validated server-side)
 ```
 
 - Prices, product details, order IDs and delivery dates are **always computed
-  server-side** from `src/data/products.ts` — browser values are never trusted.
+  server-side** from the trusted catalog (`src/lib/data.ts` via `src/lib/order-data.ts`) —
+  browser values are never trusted.
 - Anti-spam: in-memory rate limiting (5/min/IP), honeypot field, optional
   Cloudflare Turnstile (`TURNSTILE_SECRET_KEY`).
 - Emails are sent via Resend; if `RESEND_API_KEY` is unset they are logged to
@@ -49,9 +62,22 @@ Customer → Order form → POST /api/order (validated server-side)
 ## Adding a product
 
 1. Add `/public/images/products/<slug>.jpg`
-2. Append an entry in `src/data/products.ts`
+2. Append an entry in `src/lib/data.ts`
 
-Shop grid, product page, search, sitemap and order form update automatically.
+Shop grid, product page, search, sitemap, admin and the order form update
+automatically — everything reads through `src/lib/api.ts`.
+
+## Admin dashboard (Phase 1)
+
+`/admin` is gated by a simple shared password (`ADMIN_PASSWORD` env var,
+default `ignite2026`) stored in an httpOnly cookie. Orders and Products
+tables read demo data through `lib/api.ts`:
+
+- **Orders** — “Mark as Shipped” updates local UI state (no DB yet).
+- **Products** — the Edit modal updates UI state and shows the documented
+  workflow toast: *“In Phase 1, copy this updated JSON and paste it into
+  lib/data.ts. In Phase 2, this will save to PostgreSQL.”* A **Copy JSON**
+  button puts the edited record on your clipboard for pasting into `lib/data.ts`.
 
 ## Push to GitHub
 

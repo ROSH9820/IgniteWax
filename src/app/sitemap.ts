@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { products } from "@/data/products";
+import { fetchProducts } from "@/lib/api";
 import { siteConfig } from "@/lib/config";
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -21,8 +21,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: path === "" ? 1 : 0.8,
   }));
 
-  const productRoutes = products.map((p) => ({
-    url: `${base}/product/${p.slug}`,
+  const productRoutes = fetchProducts().map((p) => ({
+    url: `${base}/shop/${p.slug}`,
     lastModified: new Date(),
     changeFrequency: "weekly" as const,
     priority: 0.9,

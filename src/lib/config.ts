@@ -37,13 +37,13 @@ export const siteConfig = {
   deliveryDaysMin: 7,
   deliveryDaysMax: 14,
 
-  currency: "INR",
-  currencySymbol: "₹",
+  currency: "USD",
+  currencySymbol: "$",
 } as const;
 
-/** Formats an amount in paise-free integer rupees, e.g. 799 -> ₹799 */
+/** Formats a whole-dollar amount with cents, e.g. 28 -> $28.00 */
 export function formatPrice(amount: number): string {
-  return `${siteConfig.currencySymbol}${amount.toLocaleString("en-IN")}`;
+  return `${siteConfig.currencySymbol}${amount.toFixed(2)}`;
 }
 
 /** Builds a wa.me link with a pre-filled (URL-encoded) message. */

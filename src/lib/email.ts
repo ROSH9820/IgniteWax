@@ -103,9 +103,17 @@ export async function sendBusinessEmail(order: ResolvedOrder): Promise<boolean> 
       ${row("Order ID", `<b>${esc(order.orderId)}</b>`)}
       ${row("Order date", esc(order.orderDateLabel))}
       ${row("Customer", esc(order.customer.fullName))}
-      ${row("Mobile", esc(order.customer.mobile))}
+      ${row("Phone", esc(order.customer.phone))}
       ${row("Email", esc(order.customer.email))}
-      ${row("Address", esc(order.customer.address) + "<br/>" + esc(order.customer.city) + ", " + esc(order.customer.state) + " — " + esc(order.customer.pincode))}
+      ${row(
+        "Address",
+        esc(order.customer.address) +
+          (order.customer.city || order.customer.state || order.customer.pincode
+            ? "<br/>" +
+              esc([order.customer.city, order.customer.state].filter(Boolean).join(", ")) +
+              (order.customer.pincode ? " — " + esc(order.customer.pincode) : "")
+            : ""),
+      )}
       ${row("Items", `<ul style="margin:0;padding-left:18px;">${itemRows}</ul>`)}
       ${row("Order total", `<b style="font-size:16px;">${formatPrice(order.total)}</b>`)}
       ${row("Estimated delivery", `<b>${esc(order.deliveryLabel)}</b>`)}
@@ -176,4 +184,34 @@ export async function sendUtrUpdateEmail(
   ${WRAP_CLOSE}`;
 
   return sendEmail(`Payment ref for ${orderId} — UTR ${utr}`, html, siteConfig.businessEmail);
+}
+
+/* ── Contact form ───────────────────────────────────────────────────────── */
+
+/** Contact enquiry notification for the business. */
+export async function sendContactEmail(input: {
+  name: string;
+  email: string;
+  subject?: string;
+  message: string;
+}): Promise<boolean> {
+  const html = `${WRAP_OPEN}
+    <h2 style="margin:0 0 4px;font-size:18px;">New contact enquiry</h2>
+    <p style="margin:0 0 18px;color:#7d8677;">from the website contact form</p>
+    <table style="border-collapse:collapse;">
+      ${row("Name", `<b>${esc(input.name)}</b>`)}
+      ${row("Email", esc(input.email))}
+      ${input.subject ? row("Subject", esc(input.subject)) : ""}
+      ${row("Message", esc(input.message).replace(/\n/g, "<br/>"))}
+      ${row("Date", esc(formatDate(new Date())))}
+    </table>
+    <p style="margin:18px 0 0;color:#7d8677;font-size:13px;">Reply directly to this email to answer the customer.</p>
+  ${WRAP_CLOSE}`;
+
+  return sendEmail(
+    `Website enquiry — ${esc(input.name)}${input.subject ? ` — ${esc(input.subject)}` : ""}`,
+    html,
+    siteConfig.contactEmail,
+    input.email,
+  );
 }

@@ -7,8 +7,9 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-heading), var(--font-body), ui-sans-serif, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-serif: var(--font-heading), Georgia, "Times New Roman", serif;
+  --font-display: var(--font-heading), Georgia, serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -43,78 +44,83 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 
-  /* ── Ignite Wax brand palette (pixel-sampled from reference mockup) ── */
-  --color-forest: #4f5a3c;        /* warm olive — headlines, primary text    */
-  --color-forest-soft: #6a7452;   /* lighter olive for secondary headings    */
-  --color-olive: #77815c;         /* primary button sage green               */
-  --color-olive-deep: #626c48;    /* button hover                            */
-  --color-clay: #f2b18a;          /* soft coral accent (headline L2, hearts) */
-  --color-clay-deep: #e89868;     /* stronger coral                          */
-  --color-cream: #f5f2e8;         /* page background                         */
-  --color-sand: #efebdc;          /* warm section background                 */
-  --color-sage: #dfe3cd;          /* nav chip / light green tint             */
-  --color-sage-strip: #e7e9da;    /* bottom feature strip                    */
-  --color-blush: #f9e8e4;         /* light pink tint                         */
-  --color-peach: #fbeadd;         /* light peach tint                        */
-  --color-inkbody: #6e6d5c;       /* body copy warm grey-olive               */
-  --color-mutedink: #a19f90;     /* muted labels (scents, hints)            */
+  /* ── Ignite Wax design tokens (exact reference-image palette) ──
+     Primary Sage Green  #5C6B4F   Accent Peach/Salmon #E8A88A
+     Background Cream    #F5F0EB   Soft White          #FAFAF7
+     Text Dark           #2C2C2A   Text Muted          #6B6B68   */
+  --color-sage: #5c6b4f;          /* primary — buttons, active nav pill   */
+  --color-sage-deep: #4a5740;     /* button hover                          */
+  --color-sage-soft: #e4e8dd;     /* light sage tint — chips, icon wells   */
+  --color-peach: #e8a88a;         /* accent — badges, hearts, highlights   */
+  --color-peach-deep: #b97a56;    /* text-safe peach accent on cream       */
+  --color-peach-soft: #f6e7dc;    /* light peach tint                      */
+  --color-cream: #f5f0eb;         /* page background                       */
+  --color-softwhite: #fafaf7;     /* cards                                 */
+  --color-ink: #2c2c2a;           /* headings / dark text                  */
+  --color-inksoft: #4c4c48;       /* secondary dark text                   */
+  --color-body: #6b6b68;          /* body copy / muted text                */
+  --color-line: #e7e1d9;          /* hairline borders                      */
+  --color-blush: #f6e3dc;         /* product image-well tints              */
+  --color-lilac: #e9e4ef;
+  --color-whatsapp: #1faa55;      /* WhatsApp CTA                          */
+  --color-whatsapp-deep: #189546;
 }
 
 :root {
   --radius: 1rem;
-  --background: #f5f2e8;
-  --foreground: #4f5a3c;
-  --card: #fffef9;
-  --card-foreground: #4f5a3c;
-  --popover: #fffef9;
-  --popover-foreground: #4f5a3c;
-  --primary: #77815c;
-  --primary-foreground: #fdfcf5;
-  --secondary: #dfe3cd;
-  --secondary-foreground: #4f5a3c;
-  --muted: #efebdc;
-  --muted-foreground: #8f8d7c;
-  --accent: #fbeadd;
-  --accent-foreground: #a05f3e;
-  --destructive: #c0563f;
-  --border: #e6e1cf;
-  --input: #ded8c4;
-  --ring: #77815c;
-  --chart-1: #77815c;
-  --chart-2: #f2b18a;
-  --chart-3: #4f5a3c;
+  --background: #f5f0eb;
+  --foreground: #2c2c2a;
+  --card: #fafaf7;
+  --card-foreground: #2c2c2a;
+  --popover: #fafaf7;
+  --popover-foreground: #2c2c2a;
+  --primary: #5c6b4f;
+  --primary-foreground: #fafaf7;
+  --secondary: #e4e8dd;
+  --secondary-foreground: #2c2c2a;
+  --muted: #efeae4;
+  --muted-foreground: #6b6b68;
+  --accent: #f6e7dc;
+  --accent-foreground: #9a5f3c;
+  --destructive: #b4543e;
+  --border: #e7e1d9;
+  --input: #ddd5cb;
+  --ring: #5c6b4f;
+  --chart-1: #5c6b4f;
+  --chart-2: #e8a88a;
+  --chart-3: #2c2c2a;
   --chart-4: #d9b47f;
-  --chart-5: #b5c2a5;
-  --sidebar: #fffef9;
-  --sidebar-foreground: #4f5a3c;
-  --sidebar-primary: #77815c;
-  --sidebar-primary-foreground: #fdfcf5;
-  --sidebar-accent: #dfe3cd;
-  --sidebar-accent-foreground: #4f5a3c;
-  --sidebar-border: #e6e1cf;
-  --sidebar-ring: #77815c;
+  --chart-5: #aebca2;
+  --sidebar: #fafaf7;
+  --sidebar-foreground: #2c2c2a;
+  --sidebar-primary: #5c6b4f;
+  --sidebar-primary-foreground: #fafaf7;
+  --sidebar-accent: #e4e8dd;
+  --sidebar-accent-foreground: #2c2c2a;
+  --sidebar-border: #e7e1d9;
+  --sidebar-ring: #5c6b4f;
 }
 
 .dark {
   /* Dark mode intentionally unsupported — brand is light-only. */
-  --background: #f5f2e8;
-  --foreground: #4f5a3c;
-  --card: #fffef9;
-  --card-foreground: #4f5a3c;
-  --popover: #fffef9;
-  --popover-foreground: #4f5a3c;
-  --primary: #77815c;
-  --primary-foreground: #fdfcf5;
-  --secondary: #dfe3cd;
-  --secondary-foreground: #4f5a3c;
-  --muted: #efebdc;
-  --muted-foreground: #8f8d7c;
-  --accent: #fbeadd;
-  --accent-foreground: #a05f3e;
-  --destructive: #c0563f;
-  --border: #e6e1cf;
-  --input: #ded8c4;
-  --ring: #77815c;
+  --background: #f5f0eb;
+  --foreground: #2c2c2a;
+  --card: #fafaf7;
+  --card-foreground: #2c2c2a;
+  --popover: #fafaf7;
+  --popover-foreground: #2c2c2a;
+  --primary: #5c6b4f;
+  --primary-foreground: #fafaf7;
+  --secondary: #e4e8dd;
+  --secondary-foreground: #2c2c2a;
+  --muted: #efeae4;
+  --muted-foreground: #6b6b68;
+  --accent: #f6e7dc;
+  --accent-foreground: #9a5f3c;
+  --destructive: #b4543e;
+  --border: #e7e1d9;
+  --input: #ddd5cb;
+  --ring: #5c6b4f;
 }
 
 @layer base {
@@ -127,41 +133,40 @@
   body {
     @apply text-foreground antialiased;
   }
-  /* Rounded display face for all headings + logo wordmark (mockup type) */
+  /* Elegant serif for all headings + logo wordmark (reference-image type) */
   h1, h2, h3, .font-display {
     font-family: var(--font-display);
   }
   ::selection {
-    background: #f2b18a;
-    color: #fff;
+    background: #e8a88a;
+    color: #2c2c2a;
   }
 }
 
 @layer utilities {
-  /* Warm ambient page background — cream with sage/peach washes (mockup) */
+  /* Warm ambient page background — cream with soft sage/peach washes */
   .page-glow {
     background:
-      radial-gradient(44rem 30rem at 6% -6%, rgba(240, 226, 210, 0.9), transparent 58%),
-      radial-gradient(40rem 28rem at 100% 4%, rgba(223, 227, 205, 0.85), transparent 60%),
-      radial-gradient(46rem 34rem at 50% 112%, rgba(233, 233, 219, 0.9), transparent 65%),
-      #f5f2e8;
+      radial-gradient(44rem 30rem at 4% -8%, rgba(228, 232, 221, 0.9), transparent 58%),
+      radial-gradient(40rem 28rem at 102% 2%, rgba(246, 231, 220, 0.8), transparent 60%),
+      radial-gradient(46rem 34rem at 50% 114%, rgba(239, 234, 228, 0.9), transparent 65%),
+      #f5f0eb;
   }
   /* Frosted glass card used by hero floating card + nav */
   .glass-card {
-    background: rgba(250, 248, 238, 0.68);
-    backdrop-filter: blur(20px) saturate(1.2);
-    -webkit-backdrop-filter: blur(20px) saturate(1.2);
-    border: 1px solid rgba(255, 255, 255, 0.8);
+    background: rgba(250, 250, 247, 0.72);
+    backdrop-filter: blur(20px) saturate(1.15);
+    -webkit-backdrop-filter: blur(20px) saturate(1.15);
+    border: 1px solid rgba(255, 255, 255, 0.85);
   }
+  /* Soft diffused shadow — exact reference spec */
   .soft-shadow {
-    box-shadow:
-      0 1px 2px rgba(79, 90, 60, 0.05),
-      0 14px 34px -10px rgba(79, 90, 60, 0.12);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.06);
   }
   .soft-shadow-lg {
     box-shadow:
-      0 2px 4px rgba(79, 90, 60, 0.05),
-      0 26px 58px -14px rgba(79, 90, 60, 0.18);
+      0 4px 30px rgba(0, 0, 0, 0.06),
+      0 24px 60px -20px rgba(44, 44, 42, 0.16);
   }
   .text-balance {
     text-wrap: balance;

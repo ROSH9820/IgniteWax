@@ -18,22 +18,28 @@ export const orderFormSchema = z.object({
       .trim()
       .min(2, "Please enter your full name.")
       .max(80, "Name is too long."),
-    mobile: z
+    // International-friendly phone: optional leading +, 7–16 digits with
+    // optional spaces/dashes. (v1 ships worldwide; tighten per market later.)
+    phone: z
       .string()
       .trim()
-      .regex(/^(\+?91[-\s]?)?[6-9]\d{9}$/, "Please enter a valid 10-digit Indian mobile number."),
+      .regex(/^\+?[0-9][0-9\s-]{6,17}$/, "Please enter a valid phone number."),
     email: z.email("Please enter a valid email address.").max(120),
     address: z
       .string()
       .trim()
-      .min(10, "Please enter your complete delivery address.")
+      .min(10, "Please enter your complete delivery address (street, city, state and PIN/ZIP).")
       .max(400, "Address is too long."),
-    city: z.string().trim().min(2, "Please enter your city.").max(80),
-    state: z.string().trim().min(2, "Please enter your state.").max(80),
+    // Optional structured lines — v1 UI uses the single address field.
+    city: z.string().trim().max(80).optional().or(z.literal("")),
+    state: z.string().trim().max(80).optional().or(z.literal("")),
     pincode: z
       .string()
       .trim()
-      .regex(/^\d{6}$/, "Please enter a valid 6-digit PIN code."),
+      .max(10)
+      .regex(/^[A-Za-z0-9\s-]*$/, "Please enter a valid PIN/ZIP code.")
+      .optional()
+      .or(z.literal("")),
   }),
   items: z.array(orderItemSchema).min(1, "Your order is empty.").max(10),
   note: z.string().trim().max(500).optional().or(z.literal("")),

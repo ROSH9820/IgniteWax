@@ -4,14 +4,22 @@ import { siteConfig } from "@/lib/config";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = siteConfig.url;
-  const staticRoutes = ["", "/shop", "/about", "/contact", "/order", "/privacy", "/terms"].map(
-    (path) => ({
-      url: `${base}${path}`,
-      lastModified: new Date(),
-      changeFrequency: "weekly" as const,
-      priority: path === "" ? 1 : 0.8,
-    }),
-  );
+  const staticRoutes = [
+    "",
+    "/shop",
+    "/collections",
+    "/wellness",
+    "/about",
+    "/contact",
+    "/order",
+    "/privacy",
+    "/terms",
+  ].map((path) => ({
+    url: `${base}${path}`,
+    lastModified: new Date(),
+    changeFrequency: "weekly" as const,
+    priority: path === "" ? 1 : 0.8,
+  }));
 
   const productRoutes = products.map((p) => ({
     url: `${base}/product/${p.slug}`,

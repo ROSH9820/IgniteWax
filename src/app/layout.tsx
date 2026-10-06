@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Nunito, Quicksand } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Navbar } from "@/components/site/navbar";
@@ -8,9 +8,16 @@ import { Footer } from "@/components/site/footer";
 import { WhatsAppFloat } from "@/components/site/whatsapp-float";
 import { siteConfig } from "@/lib/config";
 
-const jakarta = Plus_Jakarta_Sans({
-  variable: "--font-jakarta",
+/* Rounded, friendly faces matching the reference mockup typography. */
+const bodyFont = Nunito({
+  variable: "--font-body",
   subsets: ["latin"],
+  display: "swap",
+});
+const headingFont = Quicksand({
+  variable: "--font-heading",
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
   display: "swap",
 });
 
@@ -49,7 +56,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#faf6ef",
+  themeColor: "#f5f2e8",
   width: "device-width",
   initialScale: 1,
 };
@@ -61,7 +68,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${jakarta.variable} font-sans antialiased`}>
+      <body className={`${bodyFont.variable} ${headingFont.variable} font-sans antialiased`}>
         <div className="page-glow flex min-h-screen flex-col">
           <Suspense fallback={null}>
             <Navbar />

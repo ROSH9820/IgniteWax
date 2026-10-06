@@ -8,14 +8,15 @@ import { Menu, Search, ShoppingBag, User, X } from "lucide-react";
 import { Logo, LogoMark } from "@/components/site/logo";
 import { products } from "@/data/products";
 import { formatPrice } from "@/lib/config";
+import { useBagCount } from "@/lib/bag";
 import { cn } from "@/lib/utils";
 
 const links = [
   { href: "/", label: "Home" },
   { href: "/shop", label: "Shop" },
-  { href: "/shop?category=Candles", label: "Collections" },
+  { href: "/collections", label: "Collections" },
   { href: "/about", label: "About Us" },
-  { href: "/about#wellness", label: "Wellness" },
+  { href: "/wellness", label: "Wellness" },
   { href: "/contact", label: "Contact" },
 ] as const;
 
@@ -23,6 +24,7 @@ export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const bagCount = useBagCount();
   const [open, setOpen] = useState(false); // mobile menu
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -66,7 +68,7 @@ export function Navbar() {
     <header className="sticky top-0 z-50 px-3 pt-3 sm:px-5 sm:pt-4">
       <nav
         aria-label="Primary"
-        className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 rounded-3xl bg-white/90 px-4 soft-shadow backdrop-blur-md sm:px-6"
+        className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 rounded-full bg-[#f4f2e6]/90 px-4 soft-shadow backdrop-blur-md sm:h-16 sm:px-6"
       >
         <Link href="/" aria-label="Ignite Wax — home" className="shrink-0">
           <Logo />
@@ -108,13 +110,15 @@ export function Navbar() {
           </Link>
           <Link
             href="/order"
-            aria-label="Start an order"
+            aria-label={`Shopping bag, ${bagCount} item${bagCount === 1 ? "" : "s"}`}
             className="relative rounded-full p-2.5 text-forest/80 transition-colors hover:bg-sage hover:text-forest"
           >
             <ShoppingBag className="h-5 w-5" />
-            <span className="absolute -top-0.5 -right-0.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-clay-deep text-[10px] font-bold text-white">
-              +
-            </span>
+            {bagCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-clay-deep text-[10px] font-bold text-white">
+                {bagCount > 9 ? "9+" : bagCount}
+              </span>
+            )}
           </Link>
         </div>
 

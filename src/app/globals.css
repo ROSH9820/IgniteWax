@@ -6,7 +6,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-heading), var(--font-body), ui-sans-serif, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -42,76 +43,78 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 
-  /* ── Ignite Wax brand palette (sampled from reference mockup) ── */
-  --color-forest: #33493a;        /* deep green — headlines, primary text   */
-  --color-forest-soft: #4a6150;   /* lighter green for secondary headings   */
-  --color-olive: #5f7f58;         /* primary button green                   */
-  --color-olive-deep: #50704a;    /* button hover                           */
-  --color-clay: #e89b77;          /* terracotta accent                      */
-  --color-clay-deep: #d97b4f;     /* price / strong accent                  */
-  --color-cream: #faf6ef;         /* page background                        */
-  --color-sand: #f3ecdf;          /* warm section background                */
-  --color-sage: #e9efe3;          /* light green tint                       */
-  --color-blush: #f9e8e4;         /* light pink tint                        */
-  --color-peach: #fbeadd;         /* light peach tint                       */
-  --color-inkbody: #5b6657;       /* body copy green-grey                   */
+  /* ── Ignite Wax brand palette (pixel-sampled from reference mockup) ── */
+  --color-forest: #4f5a3c;        /* warm olive — headlines, primary text    */
+  --color-forest-soft: #6a7452;   /* lighter olive for secondary headings    */
+  --color-olive: #77815c;         /* primary button sage green               */
+  --color-olive-deep: #626c48;    /* button hover                            */
+  --color-clay: #f2b18a;          /* soft coral accent (headline L2, hearts) */
+  --color-clay-deep: #e89868;     /* stronger coral                          */
+  --color-cream: #f5f2e8;         /* page background                         */
+  --color-sand: #efebdc;          /* warm section background                 */
+  --color-sage: #dfe3cd;          /* nav chip / light green tint             */
+  --color-sage-strip: #e7e9da;    /* bottom feature strip                    */
+  --color-blush: #f9e8e4;         /* light pink tint                         */
+  --color-peach: #fbeadd;         /* light peach tint                        */
+  --color-inkbody: #6e6d5c;       /* body copy warm grey-olive               */
+  --color-mutedink: #a19f90;     /* muted labels (scents, hints)            */
 }
 
 :root {
   --radius: 1rem;
-  --background: #faf6ef;
-  --foreground: #33493a;
-  --card: #ffffff;
-  --card-foreground: #33493a;
-  --popover: #ffffff;
-  --popover-foreground: #33493a;
-  --primary: #5f7f58;
-  --primary-foreground: #fdfbf7;
-  --secondary: #e9efe3;
-  --secondary-foreground: #33493a;
-  --muted: #f3ecdf;
-  --muted-foreground: #7d8677;
+  --background: #f5f2e8;
+  --foreground: #4f5a3c;
+  --card: #fffef9;
+  --card-foreground: #4f5a3c;
+  --popover: #fffef9;
+  --popover-foreground: #4f5a3c;
+  --primary: #77815c;
+  --primary-foreground: #fdfcf5;
+  --secondary: #dfe3cd;
+  --secondary-foreground: #4f5a3c;
+  --muted: #efebdc;
+  --muted-foreground: #8f8d7c;
   --accent: #fbeadd;
   --accent-foreground: #a05f3e;
   --destructive: #c0563f;
-  --border: #eae1d1;
-  --input: #e5dcc9;
-  --ring: #5f7f58;
-  --chart-1: #5f7f58;
-  --chart-2: #e89b77;
-  --chart-3: #33493a;
+  --border: #e6e1cf;
+  --input: #ded8c4;
+  --ring: #77815c;
+  --chart-1: #77815c;
+  --chart-2: #f2b18a;
+  --chart-3: #4f5a3c;
   --chart-4: #d9b47f;
   --chart-5: #b5c2a5;
-  --sidebar: #ffffff;
-  --sidebar-foreground: #33493a;
-  --sidebar-primary: #5f7f58;
-  --sidebar-primary-foreground: #fdfbf7;
-  --sidebar-accent: #e9efe3;
-  --sidebar-accent-foreground: #33493a;
-  --sidebar-border: #eae1d1;
-  --sidebar-ring: #5f7f58;
+  --sidebar: #fffef9;
+  --sidebar-foreground: #4f5a3c;
+  --sidebar-primary: #77815c;
+  --sidebar-primary-foreground: #fdfcf5;
+  --sidebar-accent: #dfe3cd;
+  --sidebar-accent-foreground: #4f5a3c;
+  --sidebar-border: #e6e1cf;
+  --sidebar-ring: #77815c;
 }
 
 .dark {
   /* Dark mode intentionally unsupported — brand is light-only. */
-  --background: #faf6ef;
-  --foreground: #33493a;
-  --card: #ffffff;
-  --card-foreground: #33493a;
-  --popover: #ffffff;
-  --popover-foreground: #33493a;
-  --primary: #5f7f58;
-  --primary-foreground: #fdfbf7;
-  --secondary: #e9efe3;
-  --secondary-foreground: #33493a;
-  --muted: #f3ecdf;
-  --muted-foreground: #7d8677;
+  --background: #f5f2e8;
+  --foreground: #4f5a3c;
+  --card: #fffef9;
+  --card-foreground: #4f5a3c;
+  --popover: #fffef9;
+  --popover-foreground: #4f5a3c;
+  --primary: #77815c;
+  --primary-foreground: #fdfcf5;
+  --secondary: #dfe3cd;
+  --secondary-foreground: #4f5a3c;
+  --muted: #efebdc;
+  --muted-foreground: #8f8d7c;
   --accent: #fbeadd;
   --accent-foreground: #a05f3e;
   --destructive: #c0563f;
-  --border: #eae1d1;
-  --input: #e5dcc9;
-  --ring: #5f7f58;
+  --border: #e6e1cf;
+  --input: #ded8c4;
+  --ring: #77815c;
 }
 
 @layer base {
@@ -123,39 +126,42 @@
   }
   body {
     @apply text-foreground antialiased;
-    font-feature-settings: "ss01";
+  }
+  /* Rounded display face for all headings + logo wordmark (mockup type) */
+  h1, h2, h3, .font-display {
+    font-family: var(--font-display);
   }
   ::selection {
-    background: #e89b77;
+    background: #f2b18a;
     color: #fff;
   }
 }
 
 @layer utilities {
-  /* Warm ambient page background — soft cream with blush/sage glows */
+  /* Warm ambient page background — cream with sage/peach washes (mockup) */
   .page-glow {
     background:
-      radial-gradient(42rem 30rem at 8% -4%, rgba(233, 239, 227, 0.9), transparent 60%),
-      radial-gradient(38rem 26rem at 96% 2%, rgba(251, 234, 221, 0.85), transparent 62%),
-      radial-gradient(46rem 34rem at 50% 108%, rgba(243, 236, 223, 0.9), transparent 65%),
-      #faf6ef;
+      radial-gradient(44rem 30rem at 6% -6%, rgba(240, 226, 210, 0.9), transparent 58%),
+      radial-gradient(40rem 28rem at 100% 4%, rgba(223, 227, 205, 0.85), transparent 60%),
+      radial-gradient(46rem 34rem at 50% 112%, rgba(233, 233, 219, 0.9), transparent 65%),
+      #f5f2e8;
   }
   /* Frosted glass card used by hero floating card + nav */
   .glass-card {
-    background: rgba(255, 255, 255, 0.62);
-    backdrop-filter: blur(18px) saturate(1.15);
-    -webkit-backdrop-filter: blur(18px) saturate(1.15);
-    border: 1px solid rgba(255, 255, 255, 0.75);
+    background: rgba(250, 248, 238, 0.68);
+    backdrop-filter: blur(20px) saturate(1.2);
+    -webkit-backdrop-filter: blur(20px) saturate(1.2);
+    border: 1px solid rgba(255, 255, 255, 0.8);
   }
   .soft-shadow {
     box-shadow:
-      0 1px 2px rgba(51, 73, 58, 0.04),
-      0 12px 32px -8px rgba(51, 73, 58, 0.1);
+      0 1px 2px rgba(79, 90, 60, 0.05),
+      0 14px 34px -10px rgba(79, 90, 60, 0.12);
   }
   .soft-shadow-lg {
     box-shadow:
-      0 2px 4px rgba(51, 73, 58, 0.05),
-      0 24px 56px -12px rgba(51, 73, 58, 0.16);
+      0 2px 4px rgba(79, 90, 60, 0.05),
+      0 26px 58px -14px rgba(79, 90, 60, 0.18);
   }
   .text-balance {
     text-wrap: balance;

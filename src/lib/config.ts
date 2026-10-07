@@ -25,8 +25,15 @@ export const siteConfig = {
   /** PLACEHOLDER — set CONTACT_EMAIL if different from business email */
   contactEmail: env("CONTACT_EMAIL", "hello@ignitewax.example.com"),
 
-  /** PLACEHOLDER — set NEXT_PUBLIC_WHATSAPP_NUMBER in international format, e.g. 919876543210 */
-  whatsappNumber: env("NEXT_PUBLIC_WHATSAPP_NUMBER", "919999999999"),
+  /**
+   * PLACEHOLDER — set NEXT_PUBLIC_BUSINESS_WHATSAPP_NUMBER in international
+   * format, digits only (e.g. 919876543210). Falls back to the legacy
+   * NEXT_PUBLIC_WHATSAPP_NUMBER if the new variable is not set.
+   */
+  whatsappNumber: env(
+    "NEXT_PUBLIC_BUSINESS_WHATSAPP_NUMBER",
+    env("NEXT_PUBLIC_WHATSAPP_NUMBER", "919999999999"),
+  ),
 
   /** PLACEHOLDER — set UPI_ID (server-only) */
   upiId: env("UPI_ID", "ignitewax@upi"),
@@ -57,4 +64,25 @@ export const whatsappMessages = {
     `Hi Ignite Wax! I'm interested in the ${name}. Could you tell me more about it?`,
   orderHelp: (orderId: string) =>
     `Hi Ignite Wax! I need help with my order ${orderId}.`,
+  /**
+   * Zero-cost order confirmation — pre-filled message sent with the customer
+   * straight after checkout, so the business can confirm instantly on WhatsApp.
+   */
+  orderConfirmation: (o: {
+    orderId: string;
+    customerName: string;
+    itemsText: string;
+    total: string;
+    email: string;
+    phone: string;
+  }) =>
+    `Hi Ignite Wax! 👋\n\n` +
+    `I just placed an order:\n` +
+    `Order ID: #${o.orderId}\n` +
+    `Name: ${o.customerName}\n` +
+    `Items: ${o.itemsText}\n` +
+    `Total: ${o.total}\n` +
+    `Email: ${o.email}\n` +
+    `Phone: ${o.phone}\n\n` +
+    `Please confirm my order. Thank you! 🕯️`,
 } as const;

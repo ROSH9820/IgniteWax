@@ -1,6 +1,6 @@
 import { formatPrice, siteConfig } from "@/lib/config";
 import { formatDate } from "@/lib/order";
-import type { ResolvedOrder } from "@/lib/order";
+import type { ResolvedOrder } from "@/lib/order-data";
 
 /**
  * Transactional email via Resend REST API.

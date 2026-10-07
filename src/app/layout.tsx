@@ -3,6 +3,7 @@ import { Inter, Playfair_Display } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
 import { MotionProvider } from "@/components/ui/motion-provider";
+import { SplashScreen } from "@/components/layout/splash-screen";
 import { siteConfig } from "@/lib/config";
 
 /*
@@ -62,6 +63,15 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
+/**
+ * Anti-flash guard for the splash screen.
+ * Runs before first paint: if this session hasn't seen the splash yet, tag
+ * <html> with `splash-pending` — CSS then keeps the body hidden and the
+ * background cream until <SplashScreen /> mounts and removes the tag.
+ * Keeps key "hasSeenSplash" in sync with splash-screen.tsx.
+ */
+const splashGuard = `try{if(sessionStorage.getItem("hasSeenSplash")!=="true"){document.documentElement.classList.add("splash-pending")}}catch(e){}`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -70,6 +80,8 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${bodyFont.variable} ${headingFont.variable} font-sans antialiased`}>
+        <script dangerouslySetInnerHTML={{ __html: splashGuard }} />
+        <SplashScreen />
         <MotionProvider>{children}</MotionProvider>
         <Toaster position="top-center" richColors closeButton />
       </body>

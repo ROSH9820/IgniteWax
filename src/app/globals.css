@@ -64,6 +64,20 @@
   --color-lilac: #e9e4ef;
   --color-whatsapp: #1faa55;      /* WhatsApp CTA                          */
   --color-whatsapp-deep: #189546;
+  --color-whatsapp-bright: #25d366;      /* WhatsApp brand green (order CTA) */
+  --color-whatsapp-bright-deep: #1eb856; /* hover: slightly darker           */
+}
+
+/* ── Splash screen anti-flash guard ──────────────────────────────────────
+ * The inline script in app/layout.tsx tags <html> with `splash-pending`
+ * before first paint when the splash will show this session. Body stays
+ * hidden (cream page background shows instead) until <SplashScreen />
+ * mounts and removes the tag. No-JS visitors never get the tag. */
+html.splash-pending {
+  background-color: #f5f0eb;
+}
+html.splash-pending body {
+  visibility: hidden;
 }
 
 :root {

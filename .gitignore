@@ -59,3 +59,7 @@ local-*
 # design / mockup generation scripts (sandbox only, not website code)
 /scripts/
 /tool-results/
+
+# cloudflare
+/.open-next/
+/.wrangler/

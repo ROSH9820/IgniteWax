@@ -51,10 +51,17 @@ Do **not** put secrets in `wrangler.jsonc` — that file is committed to git.
 
 ## Version pins that matter
 
-- `next` is pinned to **16.3.8**. Do not jump to 16.4.x yet — 16.4 introduced a
-  new `preview-props.json` server manifest that `@opennextjs/cloudflare@1.20.9`
-  does not inline, which crashes the worker at runtime
-  (`Unexpected loadManifest(...preview-props.json) call!`).
+- `next` is pinned to **16.3.8** (exact, no caret). Do not jump to 16.4.x yet —
+  16.4 introduced a new `preview-props.json` server manifest that
+  `@opennextjs/cloudflare@1.20.9` does not inline, which crashes the worker at
+  runtime (`Unexpected loadManifest(...preview-props.json) call!`).
+- **`bun.lock` is committed for Cloudflare CI.** Workers Builds installs
+  dependencies with `bun install --frozen-lockfile` (it ignores
+  `package-lock.json`), so a missing/stale bun.lock fails the build with
+  "lockfile had changes, but lockfile is frozen". After ANY dependency change:
+  1. `npm install` (updates package-lock.json, what local/sandbox dev uses)
+  2. `bunx bun@1.2.15 install` (regenerates bun.lock — pin the same bun
+     version Cloudflare's image runs) and commit BOTH lockfiles.
 - `.node-version` pins CI to Node 22.
 - When a newer adapter release explicitly supports Next ≥ 16.4, bump `next`
   and the adapter together and re-run `npm run cf:build` + smoke test.

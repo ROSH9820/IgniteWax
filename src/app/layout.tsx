@@ -36,7 +36,6 @@ export const metadata: Metadata = {
     "soy candles",
     "handmade candles",
     "premium candles",
-    "wellness candles",
     "hand-poured candles",
   ],
   authors: [{ name: siteConfig.name }],

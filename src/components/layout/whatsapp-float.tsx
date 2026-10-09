@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import { siteConfig, whatsappLink, whatsappMessages } from "@/lib/config";
+import { whatsappLink, whatsappMessages } from "@/lib/config";
+import { useWhatsAppNumber } from "@/lib/use-whatsapp-number";
 
 /**
  * Floating WhatsApp button — bottom-right, appears after a slight scroll so
@@ -11,6 +12,7 @@ import { siteConfig, whatsappLink, whatsappMessages } from "@/lib/config";
 export function WhatsAppFloat() {
   const [visible, setVisible] = useState(false);
   const reduced = useReducedMotion();
+  const waNumber = useWhatsAppNumber();
 
   useEffect(() => {
     const onScroll = () => setVisible(window.scrollY > 240);
@@ -21,7 +23,7 @@ export function WhatsAppFloat() {
 
   return (
     <motion.a
-      href={whatsappLink(whatsappMessages.general)}
+      href={whatsappLink(whatsappMessages.general, waNumber)}
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Chat with Ignite Wax on WhatsApp"

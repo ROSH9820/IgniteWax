@@ -26,7 +26,7 @@ export interface Product {
   description: string;
   /** Longer story shown on the product page */
   details: string;
-  /** Price in whole dollars (USD) — e.g. 28 renders as $28.00 */
+  /** Price in whole rupees (INR) — e.g. 28 renders as ₹28 */
   price: number;
   /** Path under /public */
   image: string;

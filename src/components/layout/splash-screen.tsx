@@ -6,7 +6,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
 const SPLISH_KEY = "hasSeenSplash";
 /** How long the splash holds before the exit animation starts (ms). */
-const HOLD_MS = 1800;
+const HOLD_MS = 3000;
 /** Exit animation duration (ms) — fades out + scales the logo up. */
 const EXIT_MS = 600;
 
@@ -92,13 +92,13 @@ export function SplashScreen() {
                 transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
               >
                 <Image
-                  src="/images/site/logo-emblem.png"
+                  src="/images/site/logo-lockup.png"
                   alt="Ignite Wax — Light up your moments"
-                  width={200}
-                  height={200}
+                  width={780}
+                  height={278}
                   priority
                   draggable={false}
-                  className="h-auto w-[min(200px,58vw)] select-none"
+                  className="h-auto w-[min(320px,72vw)] select-none"
                 />
               </motion.div>
             </motion.div>

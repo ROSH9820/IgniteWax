@@ -16,6 +16,7 @@ import {
 import { toast } from "sonner";
 import { fetchAvailableProducts, submitOrder, submitPaymentNote } from "@/lib/api";
 import { formatPrice, whatsappLink, whatsappMessages } from "@/lib/config";
+import { useWhatsAppNumber } from "@/lib/use-whatsapp-number";
 import type { SubmitOrderResult } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -69,6 +70,7 @@ export function OrderForm() {
   const [serverError, setServerError] = useState<string | null>(null);
   const [fieldErrs, setFieldErrs] = useState<Record<string, string>>({});
   const [confirmed, setConfirmed] = useState<SubmitOrderResult | null>(null);
+  const waNumber = useWhatsAppNumber();
 
   /* ── success screen state ── */
   const [copied, setCopied] = useState(false);
@@ -116,7 +118,7 @@ export function OrderForm() {
 
     setConfirmed(result.data);
     toast.success("Order received", {
-      description: `Your order ID is ${result.data.orderId}. A confirmation email is on its way.`,
+      description: `Your order ID is ${result.data.orderId}.`,
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -167,7 +169,11 @@ export function OrderForm() {
         email: form.email,
         phone: form.phone,
       }),
+      waNumber,
     );
+    // Honest email status — the API reports whether the customer email was
+    // actually accepted by the mail provider (Resend).
+    const emailDelivered = confirmed.emailsSent?.customer !== false;
 
     return (
       <motion.div
@@ -186,9 +192,16 @@ export function OrderForm() {
             {form.fullName.split(" ")[0]}.
           </h2>
           <p className="mt-3 text-[15px] leading-relaxed text-body">
-            Your order has been received and is being prepared with care. A
-            confirmation email is on its way to{" "}
-            <span className="font-semibold text-ink">{form.email}</span>.
+            Your order has been received and is being prepared with care.{" "}
+            {emailDelivered ? (
+              <>
+                A confirmation email is on its way to{" "}
+                <span className="font-semibold text-ink">{form.email}</span>.
+              </>
+            ) : (
+              <>Email confirmation is temporarily unavailable — we have your
+              order safely and will confirm it personally on WhatsApp.</>
+            )}
           </p>
 
           {/* Primary action — zero-cost WhatsApp order confirmation */}

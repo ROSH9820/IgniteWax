@@ -44,18 +44,29 @@ export const siteConfig = {
   deliveryDaysMin: 7,
   deliveryDaysMax: 14,
 
-  currency: "USD",
-  currencySymbol: "$",
+  currency: "INR",
+  currencySymbol: "₹",
 } as const;
 
-/** Formats a whole-dollar amount with cents, e.g. 28 -> $28.00 */
+const inrFormatter = new Intl.NumberFormat("en-IN", {
+  style: "currency",
+  currency: "INR",
+  maximumFractionDigits: 0, // Indian pricing convention — whole rupees
+});
+
+/** Formats an amount in Indian Rupees, e.g. 28 -> ₹28, 1299 -> ₹1,299 */
 export function formatPrice(amount: number): string {
-  return `${siteConfig.currencySymbol}${amount.toFixed(2)}`;
+  return inrFormatter.format(amount);
 }
 
-/** Builds a wa.me link with a pre-filled (URL-encoded) message. */
-export function whatsappLink(message: string): string {
-  return `https://wa.me/${siteConfig.whatsappNumber}?text=${encodeURIComponent(message)}`;
+/**
+ * Builds a wa.me link with a pre-filled (URL-encoded) message.
+ * `number` defaults to the configured business number; client components
+ * pass the runtime-fetched number from /api/site-config so the link stays
+ * correct even when the env var was only set after the last build.
+ */
+export function whatsappLink(message: string, number?: string): string {
+  return `https://wa.me/${number ?? siteConfig.whatsappNumber}?text=${encodeURIComponent(message)}`;
 }
 
 export const whatsappMessages = {

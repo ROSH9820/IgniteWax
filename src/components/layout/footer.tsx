@@ -14,7 +14,6 @@ const shopLinks = [
 const companyLinks = [
   { href: "/about", label: "About Us" },
   { href: "/collections", label: "Collections" },
-  { href: "/wellness", label: "Wellness" },
   { href: "/contact", label: "Contact" },
 ] as const;
 

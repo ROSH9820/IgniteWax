@@ -98,7 +98,7 @@ export function SplashScreen() {
                   height={278}
                   priority
                   draggable={false}
-                  className="h-auto w-[min(320px,72vw)] select-none"
+                  className="h-auto w-[min(440px,84vw)] select-none"
                 />
               </motion.div>
             </motion.div>

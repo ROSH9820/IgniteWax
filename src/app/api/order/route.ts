@@ -87,7 +87,7 @@ export async function POST(req: Request) {
   };
 
   // 7. Emails — a failure is logged but never blocks the order.
-  const [businessSent, customerSent] = await Promise.all([
+  const [businessSent, customer] = await Promise.all([
     sendBusinessEmail(order),
     sendCustomerEmail(order),
   ]);
@@ -98,7 +98,12 @@ export async function POST(req: Request) {
       deliveryLabel: order.deliveryLabel,
       items: order.items,
       total: order.total,
-      emailsSent: { business: businessSent, customer: customerSent },
+      emailsSent: {
+        business: businessSent,
+        customer: customer.sent,
+        customerStatus: customer.status,
+        ...(customer.reason ? { customerReason: customer.reason } : {}),
+      },
     },
     { status: 201 },
   );

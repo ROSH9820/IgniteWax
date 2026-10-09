@@ -104,5 +104,12 @@ export interface SubmitOrderResult {
   deliveryLabel: string;
   items: Array<{ id: string; name: string; slug: string; price: number; quantity: number; lineTotal: number }>;
   total: number;
-  emailsSent?: { business: boolean; customer: boolean };
+  emailsSent?: {
+    business: boolean;
+    customer: boolean;
+    /** Detailed delivery status so the UI can be honest about what happened. */
+    customerStatus?: "sent" | "not-configured" | "failed";
+    /** Short human-readable reason when the customer email was not delivered. */
+    customerReason?: string;
+  };
 }

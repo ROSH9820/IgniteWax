@@ -172,8 +172,13 @@ export function OrderForm() {
       waNumber,
     );
     // Honest email status — the API reports whether the customer email was
-    // actually accepted by the mail provider (Resend).
-    const emailDelivered = confirmed.emailsSent?.customer !== false;
+    // actually accepted by the mail provider (Resend), and why not otherwise.
+    // Legacy fallback: missing customerStatus means an older API — derive it
+    // from the boolean; missing emailsSent entirely means very old — optimistic.
+    const emailStatus =
+      confirmed.emailsSent?.customerStatus ??
+      (confirmed.emailsSent ? (confirmed.emailsSent.customer ? "sent" : "failed") : "sent");
+    const emailReason = confirmed.emailsSent?.customerReason;
 
     return (
       <motion.div
@@ -188,19 +193,27 @@ export function OrderForm() {
             <CheckCircle2 className="h-8 w-8 text-sage" strokeWidth={1.6} />
           </span>
           <h2 className="mt-5 font-serif text-3xl font-medium tracking-tight text-ink">
-            Thank you, {confirmed.items.length > 0 ? "" : ""}
-            {form.fullName.split(" ")[0]}.
+            Thank you, {form.fullName.split(" ")[0]}.
           </h2>
           <p className="mt-3 text-[15px] leading-relaxed text-body">
             Your order has been received and is being prepared with care.{" "}
-            {emailDelivered ? (
+            {emailStatus === "sent" ? (
               <>
                 A confirmation email is on its way to{" "}
-                <span className="font-semibold text-ink">{form.email}</span>.
+                <span className="font-semibold text-ink">{form.email}</span> — if it doesn't
+                appear within a few minutes, please check your spam/junk folder.
               </>
+            ) : emailStatus === "not-configured" ? (
+              <>Email confirmations aren't switched on yet. We have your order safely and
+              will confirm it personally on WhatsApp.</>
             ) : (
-              <>Email confirmation is temporarily unavailable — we have your
-              order safely and will confirm it personally on WhatsApp.</>
+              <>
+                We couldn't deliver a confirmation email
+                {emailReason ? (
+                  <span className="text-body/80"> ({emailReason})</span>
+                ) : null}
+                {" "}— but your order is safe and we'll confirm it personally on WhatsApp.
+              </>
             )}
           </p>
 

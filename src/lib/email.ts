@@ -16,12 +16,36 @@ import type { ResolvedOrder } from "@/lib/order-data";
 const RESEND_ENDPOINT = "https://api.resend.com/emails";
 const FROM = process.env.EMAIL_FROM ?? "Ignite Wax <onboarding@resend.dev>";
 
-export interface EmailResult {
-  businessSent: boolean;
-  customerSent: boolean;
+export type EmailStatus = "sent" | "not-configured" | "failed";
+
+export interface SendOutcome {
+  sent: boolean;
+  status: EmailStatus;
+  /** Short, safe-to-display reason when the email was not delivered. */
+  reason?: string;
 }
 
-async function sendEmail(subject: string, html: string, to: string, replyTo?: string): Promise<boolean> {
+/** Extract a human-readable reason from a Resend error response body. */
+function reasonFromResendError(status: number, body: string): string {
+  try {
+    const parsed = JSON.parse(body) as { message?: string };
+    if (parsed.message) return parsed.message.slice(0, 160);
+  } catch {
+    /* fall through to status-based hints */
+  }
+  if (status === 401 || status === 403)
+    return "Email provider rejected the request — check RESEND_API_KEY and verify your sending domain in Resend.";
+  if (status === 422) return "Email provider rejected the message content or address.";
+  if (status === 429) return "Email provider rate limit hit — try again shortly.";
+  return `Email provider error (HTTP ${status}).`;
+}
+
+async function sendEmail(
+  subject: string,
+  html: string,
+  to: string,
+  replyTo?: string,
+): Promise<SendOutcome> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
     console.info(
@@ -29,7 +53,7 @@ async function sendEmail(subject: string, html: string, to: string, replyTo?: st
         `[email:dev] to=${to} subject="${subject}"\n` +
         `[email:dev] html=${html.slice(0, 400)}...`,
     );
-    return false;
+    return { sent: false, status: "not-configured", reason: "Email sending is not configured (RESEND_API_KEY missing)." };
   }
   try {
     const res = await fetch(RESEND_ENDPOINT, {
@@ -47,13 +71,18 @@ async function sendEmail(subject: string, html: string, to: string, replyTo?: st
       }),
     });
     if (!res.ok) {
-      console.error(`[email] Resend error ${res.status}: ${(await res.text()).slice(0, 300)}`);
-      return false;
+      const body = await res.text();
+      console.error(`[email] Resend error ${res.status}: ${body.slice(0, 300)}`);
+      return {
+        sent: false,
+        status: "failed",
+        reason: reasonFromResendError(res.status, body),
+      };
     }
-    return true;
+    return { sent: true, status: "sent" };
   } catch (err) {
     console.error("[email] failed to send:", err instanceof Error ? err.message : err);
-    return false;
+    return { sent: false, status: "failed", reason: "Could not reach the email provider." };
   }
 }
 
@@ -126,12 +155,12 @@ export async function sendBusinessEmail(order: ResolvedOrder): Promise<boolean> 
     `New order ${order.orderId} — ${formatPrice(order.total)} — ${esc(order.customer.fullName)}`,
     html,
     siteConfig.businessEmail,
-  );
+  ).then((r) => r.sent);
 }
 
 /* ── Customer acknowledgement ───────────────────────────────────────────── */
 
-export async function sendCustomerEmail(order: ResolvedOrder): Promise<boolean> {
+export async function sendCustomerEmail(order: ResolvedOrder): Promise<SendOutcome> {
   const itemRows = order.items
     .map(
       (i) =>
@@ -183,7 +212,9 @@ export async function sendUtrUpdateEmail(
     <p style="margin:18px 0 0;color:#7d8677;font-size:13px;">Match this UTR with your UPI statement, then mark the order as paid.</p>
   ${WRAP_CLOSE}`;
 
-  return sendEmail(`Payment ref for ${orderId} — UTR ${utr}`, html, siteConfig.businessEmail);
+  return sendEmail(`Payment ref for ${orderId} — UTR ${utr}`, html, siteConfig.businessEmail).then(
+    (r) => r.sent,
+  );
 }
 
 /* ── Contact form ───────────────────────────────────────────────────────── */
@@ -213,5 +244,5 @@ export async function sendContactEmail(input: {
     html,
     siteConfig.contactEmail,
     input.email,
-  );
+  ).then((r) => r.sent);
 }

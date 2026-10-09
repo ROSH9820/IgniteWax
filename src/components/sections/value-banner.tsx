@@ -7,22 +7,22 @@ const values = [
   {
     icon: Heart,
     title: "More than a candle",
-    text: "Each one is hand-poured in small batches with intention, care and a little bit of magic in every jar.",
+    text: "Hand-poured in small batches with intention and care.",
   },
   {
     icon: Leaf,
     title: "Clean ingredients",
-    text: "Natural soy wax, cotton wicks and premium fragrance oils. No paraffins, no dyes, no phthalates — ever.",
+    text: "Natural soy wax, cotton wicks, premium fragrance oils — nothing else.",
   },
   {
     icon: Clock,
     title: "Long, clean burn",
-    text: "Up to 55 hours of steady, smoke-free fragrance, engineered for an even melt pool every time.",
+    text: "Up to 55 hours of steady, smoke-free fragrance.",
   },
   {
     icon: Heart,
     title: "Made to gift",
-    text: "Arrives in recyclable, gift-ready packaging with a note card — ready to light up someone's day.",
+    text: "Arrives gift-ready, with a note card included.",
   },
 ] as const;
 

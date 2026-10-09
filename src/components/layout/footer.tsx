@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Heart } from "lucide-react";
+import { Heart, Instagram } from "lucide-react";
 import { Logo } from "@/components/layout/logo";
 import { siteConfig, whatsappLink, whatsappMessages } from "@/lib/config";
 
@@ -43,6 +43,31 @@ export function Footer() {
             >
               <Heart className="h-4 w-4 text-peach" strokeWidth={1.6} />
               Chat with us
+            </a>
+
+            {/* Instagram — QR + handle */}
+            <a
+              href={siteConfig.instagram.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-5 flex w-fit items-center gap-3.5 rounded-2xl bg-softwhite/10 p-3 pr-5 transition-colors hover:bg-softwhite/20"
+              aria-label={`Follow ${siteConfig.instagram.handle} on Instagram`}
+            >
+              <img
+                src={siteConfig.instagram.qr}
+                alt="Instagram QR code — scan to follow Ignite Wax"
+                className="h-20 w-20 rounded-xl bg-softwhite"
+                loading="lazy"
+              />
+              <span>
+                <span className="flex items-center gap-1.5 text-sm font-bold text-softwhite">
+                  <Instagram className="h-4 w-4 text-peach" strokeWidth={1.8} aria-hidden="true" />
+                  {siteConfig.instagram.handle}
+                </span>
+                <span className="mt-0.5 block text-xs text-softwhite/75">
+                  Scan to follow — new scents &amp; behind the scenes
+                </span>
+              </span>
             </a>
           </div>
 

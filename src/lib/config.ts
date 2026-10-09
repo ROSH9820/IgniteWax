@@ -46,6 +46,13 @@ export const siteConfig = {
 
   currency: "INR",
   currencySymbol: "₹",
+
+  /** Instagram — public page + QR asset (scanned from the client-supplied code). */
+  instagram: {
+    handle: "@ignite_wax",
+    url: "https://www.instagram.com/ignite_wax",
+    qr: "/images/site/instagram-qr.png",
+  },
 } as const;
 
 const inrFormatter = new Intl.NumberFormat("en-IN", {

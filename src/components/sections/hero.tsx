@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import {
   ArrowRight,
   Flower2,
-  Globe,
   Hand,
   Heart,
   Leaf,
@@ -20,7 +19,6 @@ const badges = [
   { icon: Leaf, label: "100% Natural Soy Wax" },
   { icon: Hand, label: "Hand-Poured Small Batches" },
   { icon: Flower2, label: "Cruelty-Free & Vegan" },
-  { icon: Globe, label: "Ships Worldwide" },
 ] as const;
 
 /**
@@ -58,9 +56,8 @@ export function Hero() {
             variants={fadeUp}
             className="mt-6 max-w-lg text-[15px] leading-relaxed text-body sm:text-base"
           >
-            Thoughtfully handcrafted candles made with clean, natural ingredients —
-            designed to elevate your space, enhance your mood, and support your
-            well-being, one gentle flame at a time.
+            Hand-poured soy candles, made with clean, natural ingredients to
+            elevate your space and your mood.
           </motion.p>
 
           <motion.div variants={fadeUp} className="mt-8 flex flex-wrap items-center gap-3">
@@ -145,9 +142,6 @@ export function Hero() {
                 <span className="ml-1 text-[11px] font-medium text-body">
                   {featured.rating} ({featured.reviewCount})
                 </span>
-              </p>
-              <p className="mt-2 line-clamp-2 text-[12.5px] leading-relaxed text-body">
-                {featured.description}
               </p>
               <div className="mt-3 flex items-center justify-between">
                 <span className="text-sm font-bold text-ink">{formatPrice(featured.price)}</span>

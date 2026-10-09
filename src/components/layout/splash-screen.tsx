@@ -19,7 +19,7 @@ const EXIT_MS = 600;
  *      so the page never flashes content underneath (CSS keeps the body
  *      invisible and the background cream).
  *   2. On mount this component removes the tag, shows the full-screen
- *      overlay (cream #F5F0EB) with the Ignite Wax emblem pulsing gently.
+ *      overlay (cream #F5F0EB) with the Ignite Wax medallion pulsing gently.
  *   3. After HOLD_MS it sets the sessionStorage flag and plays the exit:
  *      overlay fades to 0 while the logo scales 1 → 1.1 (AnimatePresence).
  *
@@ -92,25 +92,16 @@ export function SplashScreen() {
                 transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
               >
                 <Image
-                  src="/images/site/logo-lockup.png"
+                  src="/images/site/splash-medallion.png"
                   alt="Ignite Wax — Light up your moments"
-                  width={780}
-                  height={278}
+                  width={720}
+                  height={720}
                   priority
                   draggable={false}
-                  className="h-auto w-[min(440px,84vw)] select-none"
+                  className="h-auto w-[min(380px,80vw)] select-none"
                 />
               </motion.div>
             </motion.div>
-
-            <motion.p
-              className="mt-7 text-[11px] font-bold tracking-[0.35em] text-body/70 uppercase"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.35, ease: "easeOut" }}
-            >
-              Light up your moments
-            </motion.p>
           </motion.div>
         )}
       </AnimatePresence>

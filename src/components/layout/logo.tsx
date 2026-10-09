@@ -27,12 +27,29 @@ export function LogoMark({ className }: { className?: string }) {
   );
 }
 
-export function Logo({ className, compact = false }: { className?: string; compact?: boolean }) {
+export function Logo({
+  className,
+  compact = false,
+  tone = "dark",
+  markClassName,
+}: {
+  className?: string;
+  compact?: boolean;
+  /** "dark" = ink text for light backgrounds; "light" = softwhite text for dark backgrounds (footer). */
+  tone?: "dark" | "light";
+  /** Extra classes for the circular mark, e.g. a ring when it sits on a matching sage background. */
+  markClassName?: string;
+}) {
   return (
     <span className={cn("inline-flex items-center gap-2.5", className)}>
-      <LogoMark className="h-10 w-10 shrink-0" />
+      <LogoMark className={cn("h-10 w-10 shrink-0", markClassName)} />
       {!compact && (
-        <span className="font-display text-[19px] font-bold tracking-tight text-ink">
+        <span
+          className={cn(
+            "font-display text-[19px] font-bold tracking-tight",
+            tone === "light" ? "text-softwhite" : "text-ink",
+          )}
+        >
           Ignite Wax
         </span>
       )}

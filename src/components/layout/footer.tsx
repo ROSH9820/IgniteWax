@@ -31,17 +31,7 @@ export function Footer() {
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
           {/* Brand */}
           <div>
-            <span className="inline-flex items-center gap-2.5">
-              <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-softwhite/15">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"
-                  strokeLinecap="round" strokeLinejoin="round" className="h-5.5 w-5.5" aria-hidden="true">
-                  <path d="M12 3.2c1.1 1.5 2.3 2.9 2.3 4.5a2.3 2.3 0 1 1-4.6 0c0-1.6 1.2-3 2.3-4.5Z" />
-                  <path d="M7.5 12.5h9v5.2a2.3 2.3 0 0 1-2.3 2.3H9.8a2.3 2.3 0 0 1-2.3-2.3v-5.2Z" />
-                  <path d="M9.3 15.4h5.4" />
-                </svg>
-              </span>
-              <span className="font-display text-[19px] font-bold tracking-tight">Ignite Wax</span>
-            </span>
+            <Logo tone="light" markClassName="ring-1 ring-softwhite/30" />
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-softwhite/75">
               {siteConfig.description}
             </p>
